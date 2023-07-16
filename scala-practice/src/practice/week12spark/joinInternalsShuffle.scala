@@ -4,8 +4,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
 
-object dataframeJoinNull extends App{
-  
+object joinInternalsShuffle extends App{
   //setting up spark conf
   val sparkConf = new SparkConf()
   .set("spark.app.name", "Dataframe use case")
@@ -33,36 +32,21 @@ object dataframeJoinNull extends App{
   .option("path","C:/All_WorkSpace/Data-Engineering/Trendy Tech/Week12_Apache Spark - Structured API Part-2/customers.csv")
   .load()
   
+  //Outer - simple join - shuffle sort merge join
+  //inner - broadcast join because of system optimization and smaller datasets
+  //right and left - also broadcast join in this case
+  
+  //avoid system optimization
+  //spark.sql("SET spark.sql.autoBroadcastJoinThreshold = -1")
+  
   val joinType = "inner"
   val joinCondition = ordersDf.col("customer_id") === customersDf.col("customer_id")
   
-  //Below code will lead to ambiguous columns
-  //ordersDf.join(customersDf,joinCondition,joinType)
-  //.select("order_id","customer_id", "customer_fname")
-  //.show()
-  
-  //Approach#1 - Renaming the column and creating a new DF
-  val ordersNewDf = ordersDf.withColumnRenamed("customer_id", "order_customer_id")
-  val joinCondition1 = ordersNewDf.col("order_customer_id") === customersDf.col("customer_id")
-  
-  ordersNewDf.join(customersDf,joinCondition1,joinType)
-  .select("order_id","customer_id", "customer_fname")
-  .sort("order_id")
-  .show()
-  
-  //Approach#2 - Drop ambiguous column from one of the Dataframes
-  ordersDf.join(customersDf,joinCondition,joinType)
+  //ordersDf.join(customersDf,joinCondition,joinType) //Simple join
+  ordersDf.join(broadcast(customersDf),joinCondition,joinType)  //Broadcast join
   .drop(ordersDf.col("customer_id"))
   .select("order_id","customer_id", "customer_fname")
   .sort("order_id")
-  .show()
-  
-  //Dealing with nulls
-  ordersDf.join(customersDf,joinCondition,joinType)
-  .drop(ordersDf.col("customer_id"))
-  .select("order_id","customer_id", "customer_fname")
-  .sort("order_id")
-  .withColumn("order_id", expr("coalesce(order_id,-1)"))
   .show()
   
   scala.io.StdIn.readLine()
