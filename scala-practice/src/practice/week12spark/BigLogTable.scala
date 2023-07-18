@@ -45,7 +45,7 @@ object BigLogTable extends App{
              .drop("monthnum") 
              .show(60)
    
-   //Using pivot() function to make the results more meaningful
+   //Using pivot() function to make the results more meaningful - transposing row to column
    spark.sql("""
                 select level, date_format(datetime,'MMMM') as month,
                 cast(date_format(datetime,'M') as int) as monthnum 
