@@ -58,6 +58,7 @@ object LogLevelDemo{
   spark.sql("Select level,month,count(*) as record_count from new_logging_table group by level,month order by level").show(false)
             
   spark.stop()
+  
   }
   
 }
