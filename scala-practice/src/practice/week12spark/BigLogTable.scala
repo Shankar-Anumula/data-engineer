@@ -70,6 +70,7 @@ object BigLogTable extends App{
                            .count()
                            .show(60)
   
+  //Stopping the spark session
   spark.stop()
     
 }
