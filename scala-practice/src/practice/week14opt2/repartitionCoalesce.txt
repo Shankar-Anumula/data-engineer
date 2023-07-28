@@ -1,0 +1,27 @@
+Repartition and coalesce
+=====================================
+For reducing partitions - coalesce is better option
+
+	1. Demo on repartition vs coalesce when we ant to decrease the number of partitions
+		a. When we are using coalesce then the resultant partitions can be of unequal sizes..
+		b. When we are using repartition then full shuffling is involved which is time consuming but we know that the resultant partition is of similar size
+	
+Repartition
+======================
+	
+val rdd1 = sc.textFile("bigLog1.txt")
+rdd1.getNumPartitions
+val rdd2 = rdd1.repartition(6)
+rdd2.count
+
+Repartition always goes through full shuffle
+
+coalesce
+========================
+
+val rdd1 = sc.textFile("bigLog1.txt")
+rdd1.getNumPartitions
+val rdd2 = rdd1.coalesce(6)
+rdd2.count
+
+No shuffling involved so single stage and processing is faster

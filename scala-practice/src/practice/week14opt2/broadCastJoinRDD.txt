@@ -1,0 +1,23 @@
+spark2-shell --conf spark.dynamicAllocation.enabled=false --master yarn --num-executors 6
+--executor-cores 2 --executor-memory 3G --conf spark.ui.port=4063
+
+Code without broadcast join
+===============
+val rdd1 = sc.textFile("bigLog1.txt")
+val rdd2  =rdd1.map(x => (x.split(":")(0),x.split(":")(1)))
+val a  = Array(("ERROR",0), ("WARN",1))
+val rdd3 = sc.parallelize(a)
+val rdd4 = rdd2.join(rdd3)
+rdd4.saveAsTextFile("joinresults1")
+
+
+
+Code with broadcast join
+============================
+val a  = Array(("ERROR",0), ("WARN",1))
+val keyMap = a.toMap
+val bcast = sc.broadcast(keyMap)
+val rdd1 = sc.textFile("bigLog1.txt")
+val rdd2  =rdd1.map(x => (x.split(":")(0),x.split(":")(1)))
+val rdd3 = rdd2.map(x => (x._1,x._2,bcast.value(x._1)))
+rdd3.saveAsTextFile("joinresults2")
