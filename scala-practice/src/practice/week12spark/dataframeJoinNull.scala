@@ -2,7 +2,7 @@ package practice.week12spark
 
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions._
+import org.apache.spark.sql.functions.expr
 
 object dataframeJoinNull extends App{
   

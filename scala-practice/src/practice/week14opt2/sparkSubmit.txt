@@ -1,0 +1,23 @@
+1. Using spark-submit we will try to submit a job
+
+	a. Client mode
+	b. Cluster mode
+
+
+
+spark3-submit \
+--conf spark.shuffle.useOldFetchProtocol=true \
+--class practice.week14opt2.LogLevelGrouping \
+--master yarn \
+--deploy-mode cluster \
+--executor-memory 3G \
+--num-executors 4 \
+sparkjobs.jar bigLog1.txt
+
+
+spark3-submit \
+--class practice.week14opt2.LogLevelGrouping \
+--master yarn \
+--executor-memory 3G \
+--num-executors 4 \
+sparkjobs.jar bigLog1.txt

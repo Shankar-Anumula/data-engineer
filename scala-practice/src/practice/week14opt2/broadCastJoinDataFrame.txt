@@ -1,0 +1,52 @@
+without broadcast join
+======================================
+
+spark-shell --conf spark.dynamicAllocation.enabled=false --master yarn --num-executors 21 
+spark.conf.set("spark.sql.autoBroadcastJoinThreshold",-1)
+
+val customersDF = spark.read.format("csv").option("header",true).option("inferSchema",true).option("path","customers.csv").load
+
+val ordersDF = spark.read.format("csv").option("header",true).option("inferSchema",true).option("path","orders.csv").load
+
+val joinedDF = customersDF.join(ordersDF,customersDF("customer_id") === ordersDF("order_customer_id"))
+
+joinedDF.write.csv("output11")
+
+
+Optimization1 - spark does automatic broadcast join
+========================================================
+
+spark-shell --conf spark.dynamicAllocation.enabled=false --master yarn --num-executors 21 
+
+val customersDF = spark.read.format("csv").option("header",true).option("inferSchema",true).option("path","customers.csv").load
+
+val ordersDF = spark.read.format("csv").option("header",true).option("inferSchema",true).option("path","orders.csv").load
+
+val joinedDF = customersDF.join(ordersDF,customersDF("customer_id") === ordersDF("order_customer_id"))
+
+joinedDF.write.csv("output12")
+
+Optimization2 - Avoid infer schema and do broadcast join
+=========================================================
+
+spark-shell --conf spark.dynamicAllocation.enabled=false --master yarn --num-executors 21 
+
+import org.apache.spark.sql.types._
+
+val ordersSchema = StructType(
+List(
+StructField("order_id",IntegerType,true),
+StructField("order_date",IntegerType,true),
+StructField("order_customer_id",IntegerType,true),
+StructField("order_status",IntegerType,true)
+))
+
+val customersDF = spark.read.format("csv").option("header",true).option("inferSchema",true).option("path","customers.csv").load
+
+val ordersDF = spark.read.format("csv").option("header",true).schema(ordersSchema).option("path","orders.csv").load
+
+val joinedDF = customersDF.join(ordersDF,customersDF("customer_id") === ordersDF("order_customer_id"))
+
+joinedDF.write.csv("output13")
+
+joinedDF.take(1000000)

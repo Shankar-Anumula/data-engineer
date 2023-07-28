@@ -1,0 +1,50 @@
+//BigLogNew.txt -> 1.46 GB
+
+1. Move the file to the edge node in the cluster.. 
+
+	Scp <local file path> <username@gatewaynode:cluster_file_path>
+
+	scp "C:/All_WorkSpace/Data-Engineering/Trendy Tech/Week13_Spark Optimization 1/bigLogNewtxt.zip" 
+	itv008165@g01.itversity.com:/home/itv008165
+	
+	cd /home/itv008165
+	
+	unzip bigLogNewtxt.zip
+	
+	cat BigLogNew.txt BigLogNew.txt BigLogNew.txt >>> BigLogLatest.txt 
+	
+
+2. Move the file to HDFS from edge node using put command
+
+	hadoop fs -put bigLogLatest.txt .
+	
+	
+3. Spark shell in local mode
+
+	spark-shell --master local[*]
+	
+		In local mode, executor and driver are same.
+		One container is allocated on the local machine
+		
+		
+4. Spark shell in yarn mode
+
+	spark-shell --master yarn
+	
+		Environment -> Spark properties
+			spark.dynamicAllocation.enabled			true
+			spark.dynamicAllocation.maxExecutors	10
+			spark.dynamicAllocation.minExecutors	2
+	
+
+5. processing
+
+	val rdd1 = sc.textFile("bigLogLatest.txt")
+	val rdd2  =rdd1.map(x => (x.split(":")(0),x.split(":")(1)))
+	val rdd3 = rdd2.groupByKey((x,y) => (x+y))
+	val rdd4 = rdd3.map(x => (x._1,x._2.size))
+	rdd4.collect
+
+	
+		
+		
