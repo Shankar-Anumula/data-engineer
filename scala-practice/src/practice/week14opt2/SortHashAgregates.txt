@@ -1,0 +1,47 @@
+spark-shell --conf spark.dynamicAllocation.enabled=false --master yarn --num-executors 11 --conf spark.ui.port=4063
+
+val orderDF = spark.read.format("csv").option("inferSchema",true).option("header",true).option("path","orders.csv").load
+
+orderDF.createOrReplaceTempView("orders")
+
+spark.sql("select * from orders").show
+
+spark.sql("select order_customer_id, date_format(order_date, 'MMMM') orderdt, count(1) cnt from orders group by order_customer_id, orderdt order by orderdt").show
+
+spark.sql("select order_customer_id, date_format(order_date, 'MMMM') orderdt, count(1) cnt, first(date_format(order_date,'M')) monthnum from orders group by order_customer_id, orderdt order by cast(monthnum as int)").show
+
+It took 36 seconds to complete this query - Sort Aggregate
+
+spark.sql("select order_customer_id, date_format(order_date, 'MMMM') orderdt, count(1) cnt, first(cast(date_format(order_date,'M') as int)) monthnum from orders group by order_customer_id, orderdt order by monthnum").show
+
+When we moved the "cast" from "order by" to "select" the query complete in 20 seconds - Hash Aggregate
+
+
+Sort aggregate - slower query
+===============================
+
+spark.sql("select order_customer_id, date_format(order_date, 'MMMM') orderdt, count(1) cnt, first(date_format(order_date,'M')) monthnum from orders 
+group by order_customer_id, orderdt order by cast(monthnum as int)").explain
+
+
+Explanation: 
+
+Why is the data not put in hash table format in this query
+	• Month number was string
+String is immutable so we cannot use string value in hash table/aggregate, that’s why system goes with Sort aggregate
+
+
+Hash Aggregate - Faster query
+================================
+
+spark.sql("select order_customer_id, date_format(order_date, 'MMMM') orderdt, count(1) cnt, first(cast(date_format(order_date,'M') as int)) monthnum
+ from orders group by order_customer_id, orderdt order by monthnum").explain
+
+ 
+ Explanation:
+	1. When we are using hash aggregate we should have mutable types in the values
+
+first(cast(date_format(order_date,'M') as int)) monthnum is integer (mutable)
+
+Always Design SQL query by trying to use/convert to mutable types wherever possible, so system can optimize internally by choosing Hash over sort aggregates
+
