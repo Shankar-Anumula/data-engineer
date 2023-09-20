@@ -17,6 +17,8 @@ object StreamingFileSource extends App{
   .config("spark.sql.streaming.schemaInference","true")
   .getOrCreate()
   
+  spark.sparkContext.setLogLevel("ERROR")
+  
   //read file source
   
   val ordersDf = spark.readStream
@@ -24,7 +26,7 @@ object StreamingFileSource extends App{
   .option("path", "myinputfolder")
   .option("cleanSource","archive")
   .option("sourceArchiveDir","myarchivefolder")
-  .option("maxFilesPertrigger", 1)
+  .option("maxFilesPerTrigger", 1)
   .load()
 
   //process
