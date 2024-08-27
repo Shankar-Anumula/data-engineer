@@ -251,5 +251,6 @@
 	<classpathentry kind="lib" path="C:/Users/anumu/Downloads/spark-3.3.2-bin-hadoop3/jars/JTransforms-3.1.jar"/>
 	<classpathentry kind="lib" path="C:/Users/anumu/Downloads/spark-3.3.2-bin-hadoop3/jars/RoaringBitmap-0.9.25.jar"/>
 	<classpathentry kind="lib" path="C:/Users/anumu/Downloads/spark-3.3.2-bin-hadoop3/jars/ST4-4.0.4.jar"/>
+	<classpathentry kind="lib" path="C:/Users/anumu/Downloads/spark-3.3.2-bin-hadoop3/jars/spark-avro_2.12-3.3.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

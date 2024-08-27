@@ -7,23 +7,22 @@ import scala.io.Source
 
 object BigDataCampaign extends App{
   
-  /* Data Set
-   * C:/All_WorkSpace/Data-Engineering/Trendy Tech/Week10_Spark Indepth/bigdatacampaigndata-201014-183159.csv
-   * 
+  /* Data Set : "C:/All_WorkSpace/Data-Engineering/Trendy Tech/Week10_Spark Indepth/bigdatacampaigndata-201014-183159.csv"
+
    * KEYWORDS: FLATMAPVALUES, BROADCAST, FILTER
-   * 
+   
    * STEPS INVOLVED
    * STEP1: Read the dataset for two columns : Search term - 1st column and Amount - 11th column 
-   * STEP2: Seperate the words in the search term : flatMapValues with space //Works only on column so read the columns in reverse first
+   * STEP2: Separate the words in the search term : flatMapValues with space //Works only on column so read the columns in reverse first
    * STEP3: Ignore the case of the words, so convert everything to lower or upper
    * STEP4: Read the Boring words - words we need to ignore and load them to a set
    * STEP5: Broadcast Boring words and apply filter 
    * STEP6: reduce the output to add the amounts per word
    * STEP7: Sort the output by the amount descending
+   
    */
   
   Logger.getLogger("org").setLevel(Level.ERROR)
-  
 
   val sc = new SparkContext("local[*]","bigdatacampaign")
   val campaignDataRDD = sc.textFile("C:/All_WorkSpace/Data-Engineering/Trendy Tech/Week10_Spark Indepth/bigdatacampaigndata-201014-183159.csv")
@@ -42,8 +41,6 @@ object BigDataCampaign extends App{
     boringWords
   }
   val boringWordsSet = sc.broadcast(loadBoringWords)
-
-  
   
   val reducedData = filteredData.reduceByKey((x,y) => (x+y))
   val sortedData = reducedData.sortBy(x => x._2,false)
