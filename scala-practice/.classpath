@@ -356,5 +356,6 @@
 	<classpathentry kind="lib" path="C:/kafka_2.12-3.5.1/libs/zookeeper-3.6.4.jar"/>
 	<classpathentry kind="lib" path="C:/kafka_2.12-3.5.1/libs/zookeeper-jute-3.6.4.jar"/>
 	<classpathentry kind="lib" path="C:/kafka_2.12-3.5.1/libs/zstd-jni-1.5.5-1.jar"/>
+	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
