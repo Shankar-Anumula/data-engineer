@@ -1,50 +1,47 @@
 package sparkstructuredapi2
 
-import org.apache.spark.sql.Dataset
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.Row
 
 object DataFrameUDFSQLExpr extends App{
-  
-  //UDF Function for checking age
-  def ageCheck(age:Int):String = {
-    if(age>18) "Y" else "N"
-  }
-  
-  val sparkConf = new SparkConf().setAppName("DataFrame Reader").setMaster("local[2]")
+  //Creating Spark Session
+  val sparkConf = new SparkConf().setAppName("UDF Column Object Demo").setMaster("local[2]")
   val spark = SparkSession.builder().config(sparkConf).getOrCreate()
   spark.sparkContext.setLogLevel("ERROR")
   
-  /*Datasets CSV - C:/All_WorkSpace/Data-Engineering/Trendy Tech/Week12_Apache Spark - Structured API Part-2/dataset1
-   */
+  //Defining a UDF
+  def ageCheck(age:Int):String = {
+    if(age > 18) "Y" else "N"
+  }
+  
   val dataDf = spark.read
-                      .format("csv")
-                      .option("inferSchema",true)
-                      .option("path","C:/All_WorkSpace/Data-Engineering/Trendy Tech/Week12_Apache Spark - Structured API Part-2/dataset1")
-                      .load
+  .format("csv")
+  .option("inferSchema", true)
+  .option("path", "C:/All_WorkSpace/Data-Engineering/Trendy Tech/Week12_Apache Spark - Structured API Part-2/dataset1")
+  .load
   
-  val namesDf:Dataset[Row] = dataDf.toDF("name","age","city")
-
-  //SQL/String expression UDF
-  spark.udf.register("parseAgeFunction",ageCheck(_:Int):String)
-  val parseAge = udf(ageCheck(_:Int):String)
-  //spark.udf.register("parseAgeFunction",(x:Int) => {if(x>18) "Y" else "N"})
+  val personDf = dataDf.toDF("name","age","city")
   
-   //SQL UDFs are registered in catalog, so we convert to view and use SQL
-  spark.catalog.listFunctions().filter(x => x.name == "parseAge").show()
+  //Registering the UDF
+  val parseAgeFunction = udf(ageCheck(_:Integer):String)
+  spark.udf.register("parseAgeFunctionSQL", ageCheck(_:Int):String)
+  
+  //Add new column using UDF Column Object
+  val personDf1 = personDf.withColumn("Adult", parseAgeFunction(col("age")))
+  personDf1.printSchema()
+  personDf1.show()
+  
+  //Add new column using SQL Expression
+  personDf.createOrReplaceTempView("Person")
+  spark.sql("Select name, age, city, parseAgeFunctionSQL(age) as adult from Person").show()
+  
+  //Only SQL UDFs registered can be seen in catalog
   spark.catalog.listFunctions().filter(x => x.name == "parseAgeFunction").show()
+  spark.catalog.listFunctions().filter(x => x.name == "parseAgeFunctionSQL").show()
   
-  namesDf.createOrReplaceTempView("peopleTable")
-  spark.sql("select name, age, city, parseAgeFunction(age) as adult from peopleTable").show
   
-  //namesDf.printSchema()
-  //namesDf.show()
-  
-  //val personDf = namesDf.withColumn("adult", expr("parseAgeFunction(age)"))
-  //personDf.show()
-  
+  //CLose the Spark Session
   scala.io.StdIn.readLine()
   spark.stop()
 }
